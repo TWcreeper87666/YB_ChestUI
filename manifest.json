@@ -1,0 +1,41 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "記得開啟測試版API",
+        "name": "YB_ChestUI",
+        "uuid": "7f3d14ba-0e46-42f7-ac67-0f8b23514050",
+        "version": [
+            8,
+            7,
+            6
+        ],
+        "min_engine_version": [
+            1,
+            19,
+            60
+        ]
+    },
+    "modules": [
+        {
+            "uuid": "ea016a50-0aed-4876-a10c-b40600b8132b",
+            "version": [
+                1,
+                0,
+                0
+            ],
+            "type": "script",
+            "language": "javascript",
+            "entry": "scripts/dist/index.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "1.17.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-ui",
+            "version": "1.4.0-beta"
+        }
+    ]
+}
