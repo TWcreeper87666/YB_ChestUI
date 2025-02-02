@@ -57,6 +57,9 @@ export class ChestUI {
     }
 
     static setPage(player: Player, name: string) {
+        const prePageName = this.getPageName(player)
+        if (prePageName in this.#pages) this.#pages[prePageName].quit?.({ player })
+
         const preSize = this.getPage(player).size
         if (!this.isUsingUI(player)) return
         if (!(name in this.#pages)) {
@@ -259,12 +262,18 @@ export class ChestUI {
         if (this.isUIItem(cursor_p.item)) cursor_p.clear()
     }
 
-    static close(player: Player, page?: string) {
+    static close(player: Player, pageName?: string) {
+        if (pageName) {
+            const prePageName = this.getPageName(player)
+            if (prePageName !== pageName && prePageName in this.#pages) {
+                this.#pages[prePageName].quit?.({ player })
+            }
+        }
         const entity = this.getEntity(player)
         if (!entity) return
         this.#killEntity(entity)
         this.removeUIItems(player)
-        if (page) this.setPage(player, page)
+        if (pageName) this.#setPageName(player, pageName)
     }
 }
 

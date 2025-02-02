@@ -4,13 +4,11 @@ import { Size } from "./ChestUI"
 
 export type ButtonsWithIndex = { [key: number]: Button }
 
-export type PageUpdateFunc = (arg: {
-    player: Player, container_e: Container
-}) => void
+export type PageFunc = (arg: { player: Player, container_e: Container }) => void
 
-export type PageStartFunc = (arg: {
-    player: Player, container_e: Container
-}) => void
+export type PageStartFunc = PageFunc;
+export type PageUpdateFunc = PageFunc;
+export type PageQuitFunc = (arg: { player: Player }) => void;
 
 export type PageOptions = {
     /** The size of the UI, defaults to Size.small */
@@ -27,6 +25,11 @@ export type PageOptions = {
      * If a number is set, the update function will be executed.
      */
     tickInterval?: number
+    /** 
+    * Function to execute when the page is closed. 
+    * This can be used to clean up resources or handle exit logic.
+    */
+    quit?: PageQuitFunc
 };
 
 export class Page {
@@ -35,6 +38,7 @@ export class Page {
     start?: PageStartFunc
     update?: PageUpdateFunc
     tickInterval?: number
+    quit?: PageQuitFunc
 
     constructor(btnWithIdx?: ButtonsWithIndex, options: PageOptions = {}) {
         this.btnWithIdx = btnWithIdx

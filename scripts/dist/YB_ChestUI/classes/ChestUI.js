@@ -46,6 +46,9 @@ export class ChestUI {
         return page;
     }
     static setPage(player, name) {
+        const prePageName = this.getPageName(player);
+        if (prePageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages))
+            __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ player });
         const preSize = this.getPage(player).size;
         if (!this.isUsingUI(player))
             return;
@@ -181,14 +184,20 @@ export class ChestUI {
         if (this.isUIItem(cursor_p.item))
             cursor_p.clear();
     }
-    static close(player, page) {
+    static close(player, pageName) {
+        if (pageName) {
+            const prePageName = this.getPageName(player);
+            if (prePageName !== pageName && prePageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)) {
+                __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ player });
+            }
+        }
         const entity = this.getEntity(player);
         if (!entity)
             return;
         __classPrivateFieldGet(this, _a, "m", _ChestUI_killEntity).call(this, entity);
         this.removeUIItems(player);
-        if (page)
-            this.setPage(player, page);
+        if (pageName)
+            __classPrivateFieldGet(this, _a, "m", _ChestUI_setPageName).call(this, player, pageName);
     }
 }
 _a = ChestUI, _ChestUI_pageInit = function _ChestUI_pageInit(player, entity, page) {
