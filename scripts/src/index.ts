@@ -9,30 +9,23 @@ world.afterEvents.entityHurt.subscribe(({ damageSource, hurtEntity, damage }) =>
     }
 })
 
-const p = world.getPlayers()[0]
-
 loop()
 async function loop() {
-    // while (true) {
-    //     showParticleText(p, 'hahaha  test\nbro wassup\n1 2 3 4 5 a', { x: 0, y: 1, z: 0 }, {
-    //         fontSize: 1,
-    //         maxAge: 0.05
-    //     })
-    //     await system.waitTicks(1)
-    // }
     while (true) {
-        const blockRaycastHit = p.getBlockFromViewDirection()
-        if (blockRaycastHit) {
-            const block = blockRaycastHit.block
-            const location = p.getHeadLocation()
-            const direction = p.getViewDirection()
-            location.x += direction.x
-            location.y += direction.y
-            location.z += direction.z
-            showParticleText(p, `${block.typeId.replace(/^.*?:/, '')}`, location, {
-                maxAge: 0.05
-            })
-        }
+        world.getAllPlayers().forEach(player => {
+            const blockRaycastHit = player.getBlockFromViewDirection()
+            if (blockRaycastHit) {
+                const block = blockRaycastHit.block
+                const location = player.getHeadLocation()
+                const direction = player.getViewDirection()
+                location.x += direction.x
+                location.y += direction.y
+                location.z += direction.z
+                showParticleText(player, `${block.typeId.replace(/^.*?:/, '')}`, location, {
+                    maxAge: 0.05
+                })
+            }
+        })
         await system.waitTicks(1)
     }
 }

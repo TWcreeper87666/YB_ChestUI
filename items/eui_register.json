@@ -8,7 +8,7 @@
       }
     },
     "components": {
-      "minecraft:icon": "experience_bottle",
+      "minecraft:icon": "paper",
       "minecraft:display_name": {
         "value": "註冊箱子UI頁面"
       },

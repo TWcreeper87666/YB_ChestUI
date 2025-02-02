@@ -8,6 +8,7 @@ import { sendMessage } from "../functions"
 type JsonButton = {
     name: string
     typeId: string
+    amount?: number
     lore?: string[]
     commands?: string
     clickSound?: string
@@ -29,7 +30,7 @@ export class Register {
     }
 
     form_menu() {
-        if (!this.#checkContainer()) return
+        if (!this.#check()) return
         const form = new ActionFormData().title('§l§1修改頁面')
         const indices = []
         for (let i = 0; i < this.container.size; i++) {
@@ -40,7 +41,7 @@ export class Register {
         }
         form.button('§l註冊頁面')
         form.show(this.player).then(({ canceled, selection }) => {
-            if (canceled || !this.#checkContainer()) return
+            if (canceled || !this.#check()) return
             if (selection < indices.length) {
                 this.#form_edit(indices[selection])
             } else {
@@ -68,7 +69,11 @@ export class Register {
         })
     }
 
-    #checkContainer() {
+    #check() {
+        if (!this.player.isOp()) {
+            sendMessage(this.player, '§c沒有權限使用')
+            return false
+        }
         const cond = this.container?.isValid()
         if (!cond) sendMessage(this.player, '§c目標箱子已消失')
         return cond
@@ -86,7 +91,7 @@ export class Register {
             .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
             .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面)', '', processedCommands)
         form.show(this.player).then(({ canceled, formValues }) => {
-            if (canceled || !this.#checkContainer()) return
+            if (canceled || !this.#check()) return
             const [name, lore, clickSound, toPage, commands] = formValues as string[]
             const processedCommands = Register.#split(commands).join('\n')
             item.nameTag = '§r' + Register.#split(name).join('\n')
@@ -102,7 +107,7 @@ export class Register {
             .textField('§l頁面名稱', ChestUI.config.defaultPageName)
             .dropdown('§l頁面大小', options)
         form.show(this.player).then(({ canceled, formValues }) => {
-            if (canceled || !this.#checkContainer()) return
+            if (canceled || !this.#check()) return
             const [name, sizeIdx] = formValues as [string, number]
             if (name.length === 0) return sendMessage(this.player, '§c頁面名稱不可為空')
             const jsonPages = Register.#getPages()
@@ -122,7 +127,7 @@ export class Register {
             const item = this.container.getItem(i)
             if (!item) continue
             const [lore, _, clickSound, toPage, commands] = item.getLore()
-            btnWithIdx[i] = { name: item.nameTag ?? '', typeId: item.typeId }
+            btnWithIdx[i] = { name: item.nameTag ?? '', typeId: item.typeId, amount: item.amount }
             if (clickSound) btnWithIdx[i].clickSound = clickSound
             if (toPage) btnWithIdx[i].toPage = toPage
             if (commands) btnWithIdx[i].commands = Register.#parse(commands)
@@ -144,13 +149,10 @@ export class Register {
     }
 
     static #buildButton(jsonButton: JsonButton) {
-        const { name, typeId, lore, commands, clickSound, toPage } = jsonButton
+        const { name, typeId, amount, lore, commands, clickSound, toPage } = jsonButton
         const processedCommands = commands ? this.#split(commands).map(command => command.trim()) : []
         return new Button(name, typeId, {
-            clickSound,
-            toPage,
-            lore,
-            onClick: ({ player }) => {
+            amount, clickSound, toPage, lore, onClick: ({ player }) => {
                 processedCommands.forEach(command => {
                     if (command.startsWith('toPage:')) {
                         const pageName = command.slice(7).trim()

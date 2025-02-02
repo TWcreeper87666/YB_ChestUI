@@ -3,7 +3,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Register_instances, _a, _Register_checkContainer, _Register_form_edit, _Register_form_register, _Register_getBtnWithIdx, _Register_buildButton, _Register_setPages, _Register_getPages, _Register_split, _Register_parse;
+var _Register_instances, _a, _Register_check, _Register_form_edit, _Register_form_register, _Register_getBtnWithIdx, _Register_buildButton, _Register_setPages, _Register_getPages, _Register_split, _Register_parse;
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { Page } from "./Page";
@@ -17,7 +17,7 @@ export class Register {
         this.container = container;
     }
     form_menu() {
-        if (!__classPrivateFieldGet(this, _Register_instances, "m", _Register_checkContainer).call(this))
+        if (!__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
             return;
         const form = new ActionFormData().title('§l§1修改頁面');
         const indices = [];
@@ -30,7 +30,7 @@ export class Register {
         }
         form.button('§l註冊頁面');
         form.show(this.player).then(({ canceled, selection }) => {
-            if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_checkContainer).call(this))
+            if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
                 return;
             if (selection < indices.length) {
                 __classPrivateFieldGet(this, _Register_instances, "m", _Register_form_edit).call(this, indices[selection]);
@@ -72,7 +72,11 @@ export class Register {
         }
     }
 }
-_a = Register, _Register_instances = new WeakSet(), _Register_checkContainer = function _Register_checkContainer() {
+_a = Register, _Register_instances = new WeakSet(), _Register_check = function _Register_check() {
+    if (!this.player.isOp()) {
+        sendMessage(this.player, '§c沒有權限使用');
+        return false;
+    }
     const cond = this.container?.isValid();
     if (!cond)
         sendMessage(this.player, '§c目標箱子已消失');
@@ -89,7 +93,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_checkContainer = f
         .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
         .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面)', '', processedCommands);
     form.show(this.player).then(({ canceled, formValues }) => {
-        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_checkContainer).call(this))
+        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
             return;
         const [name, lore, clickSound, toPage, commands] = formValues;
         const processedCommands = __classPrivateFieldGet(_a, _a, "m", _Register_split).call(_a, commands).join('\n');
@@ -104,7 +108,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_checkContainer = f
         .textField('§l頁面名稱', ChestUI.config.defaultPageName)
         .dropdown('§l頁面大小', options);
     form.show(this.player).then(({ canceled, formValues }) => {
-        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_checkContainer).call(this))
+        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
             return;
         const [name, sizeIdx] = formValues;
         if (name.length === 0)
@@ -125,7 +129,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_checkContainer = f
         if (!item)
             continue;
         const [lore, _, clickSound, toPage, commands] = item.getLore();
-        btnWithIdx[i] = { name: item.nameTag ?? '', typeId: item.typeId };
+        btnWithIdx[i] = { name: item.nameTag ?? '', typeId: item.typeId, amount: item.amount };
         if (clickSound)
             btnWithIdx[i].clickSound = clickSound;
         if (toPage)
@@ -137,13 +141,10 @@ _a = Register, _Register_instances = new WeakSet(), _Register_checkContainer = f
     }
     return btnWithIdx;
 }, _Register_buildButton = function _Register_buildButton(jsonButton) {
-    const { name, typeId, lore, commands, clickSound, toPage } = jsonButton;
+    const { name, typeId, amount, lore, commands, clickSound, toPage } = jsonButton;
     const processedCommands = commands ? __classPrivateFieldGet(this, _a, "m", _Register_split).call(this, commands).map(command => command.trim()) : [];
     return new Button(name, typeId, {
-        clickSound,
-        toPage,
-        lore,
-        onClick: ({ player }) => {
+        amount, clickSound, toPage, lore, onClick: ({ player }) => {
             processedCommands.forEach(command => {
                 if (command.startsWith('toPage:')) {
                     const pageName = command.slice(7).trim();
