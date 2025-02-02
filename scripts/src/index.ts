@@ -13,18 +13,20 @@ loop()
 async function loop() {
     while (true) {
         world.getAllPlayers().forEach(player => {
-            const blockRaycastHit = player.getBlockFromViewDirection()
-            if (blockRaycastHit) {
-                const block = blockRaycastHit.block
-                const location = player.getHeadLocation()
-                const direction = player.getViewDirection()
-                location.x += direction.x
-                location.y += direction.y
-                location.z += direction.z
-                showParticleText(player, `${block.typeId.replace(/^.*?:/, '')}`, location, {
-                    maxAge: 0.05
-                })
-            }
+            try {
+                const blockRaycastHit = player.getBlockFromViewDirection()
+                if (blockRaycastHit) {
+                    const block = blockRaycastHit.block
+                    const location = player.getHeadLocation()
+                    const direction = player.getViewDirection()
+                    location.x += direction.x
+                    location.y += direction.y
+                    location.z += direction.z
+                    showParticleText(player, `${block.typeId.replace(/^.*?:/, '')}`, location, {
+                        maxAge: 0.05
+                    })
+                }
+            } catch { }
         })
         await system.waitTicks(1)
     }

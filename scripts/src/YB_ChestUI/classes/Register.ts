@@ -89,7 +89,7 @@ export class Register {
             .textField('§l說明("/"換行)', '', lore ?? '')
             .textField('§l點擊音效', '', clickSound ?? '')
             .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
-            .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面)', '', processedCommands)
+            .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面, closeUI 關閉UI)', '', processedCommands)
         form.show(this.player).then(({ canceled, formValues }) => {
             if (canceled || !this.#check()) return
             const [name, lore, clickSound, toPage, commands] = formValues as string[]
@@ -157,6 +157,8 @@ export class Register {
                     if (command.startsWith('toPage:')) {
                         const pageName = command.slice(7).trim()
                         ChestUI.setPage(player, pageName)
+                    } else if (command.startsWith('closeUI')) {
+                        ChestUI.close(player)
                     } else {
                         player.runCommand(command)
                     }

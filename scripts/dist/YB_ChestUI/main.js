@@ -1,2 +1,2 @@
-import { ChestUI } from "./classes/ChestUI";
-ChestUI;
+import { Button, ChestUI, Page } from "./classes/ChestUI";
+ChestUI; // make your page here!
