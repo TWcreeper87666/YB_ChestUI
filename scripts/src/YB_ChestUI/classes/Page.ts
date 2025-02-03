@@ -1,14 +1,18 @@
 import { Container, Entity, ItemStack, Player, system } from "@minecraft/server"
 import { Button } from "./Button"
-import { Size } from "./ChestUI"
+
+export enum Size {
+    small = 27,
+    large = 54,
+    extra = 117,
+    piano = 28,
+}
 
 export type ButtonsWithIndex = { [key: number]: Button }
 
-export type PageFunc = (arg: { player: Player, container_e: Container }) => void
-
-export type PageStartFunc = PageFunc;
-export type PageUpdateFunc = PageFunc;
-export type PageQuitFunc = (arg: { player: Player }) => void;
+export type PageStartFunc = (arg: { player: Player, container_e: Container }) => void;
+export type PageUpdateFunc = (arg: { player: Player, container_e: Container }) => void;
+export type PageQuitFunc = (arg: { playerName: string, player?: Player }) => void;
 
 export type PageOptions = {
     /** The size of the UI, defaults to Size.small */

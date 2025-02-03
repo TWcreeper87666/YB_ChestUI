@@ -160,6 +160,8 @@ You can modify a button's properties, such as `name`, `clickSound`, `toPage`, an
 
 After making your changes, simply register your page and enjoy the result!
 
+- priority: api page > in game page > default home page
+
 ## TODO
 - images of various size with index
 - hitbox pvp test

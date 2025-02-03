@@ -1,5 +1,5 @@
 import { Player, Entity, Container, ItemStack, ItemLockMode, ItemType } from "@minecraft/server"
-import { UpdateType, ChestUI } from "./ChestUI"
+import { ChestUI } from "./ChestUI"
 
 export type OnClickFunc = (arg: {
     /** The player interacting with the UI */
@@ -11,6 +11,13 @@ export type OnClickFunc = (arg: {
     /** The index of the item in the container */
     idx: number
 }) => void;
+
+export enum UpdateType {
+    empty,
+    amount,
+    typeId,
+    stackable
+}
 
 type buttonOptions = {
     /** Function to execute when clicked */
