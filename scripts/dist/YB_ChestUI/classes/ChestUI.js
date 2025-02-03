@@ -6,23 +6,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _a, _ChestUI_pages, _ChestUI_pageInit, _ChestUI_setPageName, _ChestUI_killEntity, _ChestUI_spawnEntity, _ChestUI_getSizeName;
 import { ItemStack, ItemLockMode, system, world } from "@minecraft/server";
 import { givePlayerItem, sendMessage } from "../functions";
-import { Page } from "./Page";
-import { Button } from "./Button";
+import { Page, Size } from "./Page";
+import { Button, UpdateType } from "./Button";
 import { Register } from "./Register";
-export var UpdateType;
-(function (UpdateType) {
-    UpdateType[UpdateType["empty"] = 0] = "empty";
-    UpdateType[UpdateType["amount"] = 1] = "amount";
-    UpdateType[UpdateType["typeId"] = 2] = "typeId";
-    UpdateType[UpdateType["stackable"] = 3] = "stackable";
-})(UpdateType || (UpdateType = {}));
-export var Size;
-(function (Size) {
-    Size[Size["small"] = 27] = "small";
-    Size[Size["large"] = 54] = "large";
-    Size[Size["extra"] = 117] = "extra";
-    Size[Size["piano"] = 28] = "piano";
-})(Size || (Size = {}));
 export class ChestUI {
     // --- Page management functions ---
     static setUIPage(name, page) {
@@ -31,6 +17,9 @@ export class ChestUI {
         }
         else if (name === this.config.defaultPageName) {
             __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[name] = this.config.defaultPage;
+        }
+        else {
+            delete __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[name];
         }
     }
     static getPage(player) {
@@ -48,7 +37,7 @@ export class ChestUI {
     static setPage(player, name) {
         const prePageName = this.getPageName(player);
         if (prePageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages))
-            __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ player });
+            __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ playerName: player.name, player });
         const preSize = this.getPage(player).size;
         if (!this.isUsingUI(player))
             return;
@@ -95,8 +84,7 @@ export class ChestUI {
         if (!entity)
             return;
         const container = entity.getComponent('inventory').container;
-        if (!container.isValid())
-            return;
+        // if (!container.isValid()) return
         for (const [key, item] of Object.entries(itemsWithIdx)) {
             const slot = parseInt(key);
             const preItem = container.getItem(slot);
@@ -110,16 +98,13 @@ export class ChestUI {
     // --- Entity management ---
     static getEntity(player) {
         const id = player.getDynamicProperty('yb:eui_entityId');
-        if (!id)
-            return;
-        const entity = world.getEntity(id);
-        return entity?.isValid() ? entity : undefined;
+        return id ? world.getEntity(id) : undefined;
     }
     static removeUnownedEntity(entity) {
-        if (!entity?.isValid())
+        if (!entity)
             return;
         const owner = entity.getComponent('tameable').tamedToPlayer;
-        if (!owner?.isValid())
+        if (!owner)
             __classPrivateFieldGet(this, _a, "m", _ChestUI_killEntity).call(this, entity);
     }
     // --- UI State management ---
@@ -146,9 +131,10 @@ export class ChestUI {
         let entity = this.getEntity(player);
         if (!entity)
             entity = __classPrivateFieldGet(this, _a, "m", _ChestUI_spawnEntity).call(this, player);
-        if (!entity?.isValid())
+        if (!entity)
             return;
         const container_e = entity.getComponent('inventory').container;
+        // if (!container_e.isValid()) return
         const page = this.getPage(player);
         if (page.tickInterval) {
             const pageUpdateTick = player.getDynamicProperty('yb:eui_pageUpdateTick') ?? 0;
@@ -193,7 +179,7 @@ export class ChestUI {
         if (pageName) {
             const prePageName = this.getPageName(player);
             if (prePageName !== pageName && prePageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)) {
-                __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ player });
+                __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ playerName: player.name, player });
             }
         }
         const entity = this.getEntity(player);
@@ -204,11 +190,52 @@ export class ChestUI {
         if (pageName)
             __classPrivateFieldGet(this, _a, "m", _ChestUI_setPageName).call(this, player, pageName);
     }
+    static init() {
+        world.afterEvents.entityLoad.subscribe(({ entity }) => {
+            if (entity.typeId === 'yb:ui_entity')
+                _a.removeUnownedEntity(entity);
+        });
+        world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
+            const { player, itemStack, block } = e;
+            if (itemStack?.typeId !== 'yb:eui_register')
+                return;
+            if (block.typeId !== 'minecraft:chest')
+                return;
+            e.cancel = true;
+            await system.waitTicks(1);
+            const container = block.getComponent('inventory').container;
+            new Register(player, container).form_menu();
+        });
+        world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
+            if (itemStack.typeId !== 'yb:eui_register')
+                return;
+            new Register(source).form_delete();
+        });
+        world.afterEvents.worldInitialize.subscribe(() => {
+            world.getAllPlayers().forEach(player => _a.setPage(player, _a.config.defaultPageName));
+        });
+        world.beforeEvents.playerLeave.subscribe(async ({ player }) => {
+            const entity = _a.getEntity(player);
+            const playerName = player.name;
+            const pageName = _a.getPageName(player);
+            __classPrivateFieldGet(_a, _a, "m", _ChestUI_setPageName).call(_a, player, _a.config.defaultPageName);
+            await system.waitTicks(1);
+            _a.removeUnownedEntity(entity);
+            if (pageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages))
+                __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[pageName].quit?.({ playerName });
+        });
+        world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
+            if (initialSpawn)
+                _a.setPage(player, _a.config.defaultPageName);
+        });
+        system.runInterval(() => {
+            world.getAllPlayers().forEach(p => _a.update(p));
+        });
+    }
 }
 _a = ChestUI, _ChestUI_pageInit = function _ChestUI_pageInit(player, entity, page) {
     const container_e = entity.getComponent('inventory').container;
-    if (!container_e.isValid())
-        return;
+    // if (!container_e.isValid()) return
     const { btnWithIdx, size, start } = page;
     for (let i = 0; i < size; i++) {
         const item = container_e.getItem(i);
@@ -260,35 +287,13 @@ ChestUI.config = {
     defaultPageName: 'home',
     defaultClickSound: 'random.click',
     defaultButtonUpdateType: UpdateType.typeId,
-    defaultPage: new Page({ 13: new Button('homePage\n[default]', 'bedrock') }),
+    defaultPage: new Page({ 13: new Button('Hello World!\n[defaultPage]', 'bedrock') }),
     defaultPageSize: Size.small
 };
 // Static pages store
 _ChestUI_pages = { value: {
         [_a.config.defaultPageName]: _a.config.defaultPage
     } };
-export { Button, Page };
-world.afterEvents.entityLoad.subscribe(({ entity }) => {
-    if (entity.typeId === 'yb:ui_entity')
-        ChestUI.removeUnownedEntity(entity);
-});
-world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
-    const { player, itemStack, block } = e;
-    if (itemStack?.typeId !== 'yb:eui_register')
-        return;
-    if (block.typeId !== 'minecraft:chest')
-        return;
-    e.cancel = true;
-    await system.waitTicks(1);
-    const container = block.getComponent('inventory').container;
-    new Register(player, container).form_menu();
-});
-world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
-    if (itemStack.typeId !== 'yb:eui_register')
-        return;
-    new Register(source).form_delete();
-});
-system.runInterval(() => {
-    world.getAllPlayers().forEach(p => ChestUI.update(p));
-});
+ChestUI.init();
 Register.load();
+export { Button, Page, Size, UpdateType };

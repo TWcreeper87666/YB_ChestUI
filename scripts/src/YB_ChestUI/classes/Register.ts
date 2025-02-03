@@ -87,7 +87,7 @@ export class Register {
         const form = new ModalFormData().title('§l§1修改按鈕')
             .textField('§l名稱("/"換行)', '', name)
             .textField('§l說明("/"換行)', '', lore ?? '')
-            .textField('§l點擊音效', '', clickSound ?? '')
+            .textField(`§l點擊音效(預設為 ${ChestUI.config.defaultClickSound})`, '', clickSound ?? '')
             .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
             .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面, closeUI 關閉UI)', '', processedCommands)
         form.show(this.player).then(({ canceled, formValues }) => {
@@ -102,7 +102,7 @@ export class Register {
     }
 
     #form_register() {
-        const options = ['small', 'large', 'extra']
+        const options = ['small', 'large']
         const form = new ModalFormData().title('§l§1註冊頁面')
             .textField('§l頁面名稱', ChestUI.config.defaultPageName)
             .dropdown('§l頁面大小', options)

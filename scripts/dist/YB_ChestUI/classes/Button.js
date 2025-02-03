@@ -1,4 +1,11 @@
-import { UpdateType, ChestUI } from "./ChestUI";
+import { ChestUI } from "./ChestUI";
+export var UpdateType;
+(function (UpdateType) {
+    UpdateType[UpdateType["empty"] = 0] = "empty";
+    UpdateType[UpdateType["amount"] = 1] = "amount";
+    UpdateType[UpdateType["typeId"] = 2] = "typeId";
+    UpdateType[UpdateType["stackable"] = 3] = "stackable";
+})(UpdateType || (UpdateType = {}));
 export class Button {
     constructor(nameTag, itemType, options = {}) {
         this.nameTag = nameTag;

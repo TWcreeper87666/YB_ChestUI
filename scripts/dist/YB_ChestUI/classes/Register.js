@@ -6,9 +6,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var _Register_instances, _a, _Register_check, _Register_form_edit, _Register_form_register, _Register_getBtnWithIdx, _Register_buildButton, _Register_setPages, _Register_getPages, _Register_split, _Register_parse;
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { Page } from "./Page";
+import { Page, Size } from "./Page";
 import { Button } from "./Button";
-import { ChestUI, Size } from "./ChestUI";
+import { ChestUI } from "./ChestUI";
 import { sendMessage } from "../functions";
 export class Register {
     constructor(player, container) {
@@ -89,7 +89,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_check = function _
     const form = new ModalFormData().title('§l§1修改按鈕')
         .textField('§l名稱("/"換行)', '', name)
         .textField('§l說明("/"換行)', '', lore ?? '')
-        .textField('§l點擊音效', '', clickSound ?? '')
+        .textField(`§l點擊音效(預設為 ${ChestUI.config.defaultClickSound})`, '', clickSound ?? '')
         .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
         .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面, closeUI 關閉UI)', '', processedCommands);
     form.show(this.player).then(({ canceled, formValues }) => {
@@ -103,7 +103,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_check = function _
         sendMessage(this.player, '§e已更新按鈕');
     });
 }, _Register_form_register = function _Register_form_register() {
-    const options = ['small', 'large', 'extra'];
+    const options = ['small', 'large'];
     const form = new ModalFormData().title('§l§1註冊頁面')
         .textField('§l頁面名稱', ChestUI.config.defaultPageName)
         .dropdown('§l頁面大小', options);
