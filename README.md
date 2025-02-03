@@ -30,8 +30,8 @@
 - [YB_ChestUI.mcaddon](https://drive.google.com/file/d/1A11UyD0mg-YuNSTtIXQc6HwunoeGhdzn/view?usp=drive_link)
 
 ### YB_ChestUI_sample
-裡面包含了鋼琴、貪吃蛇、踩地雷、2048、數獨可以遊玩。將副檔名更改為mcaddon點擊即可載入遊戲中。
-- [YB_ChestUI_sample.zip](https://youtu.be/dQw4w9WgXcQ?si=CSZVN8JjEw8wUmYz)
+裡面包含了鋼琴、貪吃蛇、踩地雷、2048、數獨可以遊玩。檔案為加密的zip，裡面有行為包跟材質包。
+- [YB_ChestUI_sample.zip](https://drive.google.com/file/d/1H3qIe-x_pXWLg7K4HA9JwoXhjldu-l_b/view?usp=sharing)
 
 ## 注意
 
