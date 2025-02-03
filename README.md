@@ -25,11 +25,13 @@
 ## 下載
 
 ### YB_ChestUI
-- [材質包](https://drive.google.com/file/d/1Jcxw4wSeKuQIIOPivXvKCtBjbooeu-__/view?usp=sharing)
+- [YB_ChestUI_bp.mcpack](https://drive.google.com/file/d/1mJqsiihfAd2w7Ks2fSigCgk4fO5bAoUq/view?usp=sharing)
+- [YB_ChestUI_rp.mcpack](https://drive.google.com/file/d/1Jcxw4wSeKuQIIOPivXvKCtBjbooeu-__/view?usp=sharing)
+- [YB_ChestUI.mcaddon](https://drive.google.com/file/d/1A11UyD0mg-YuNSTtIXQc6HwunoeGhdzn/view?usp=drive_link)
 
 ### YB_ChestUI_sample
-裡面包含了鋼琴、
-- [範例addon](https://drive.google.com/file/d/1wn3BW3UCJr6UVnnvC72VACLxB8-_3ofe/view?usp=sharing)
+裡面包含了鋼琴、貪吃蛇、踩地雷、2048、數獨可以遊玩。將副檔名更改為mcaddon點擊即可載入遊戲中。
+- [YB_ChestUI_sample.zip](https://youtu.be/dQw4w9WgXcQ?si=CSZVN8JjEw8wUmYz)
 
 ## 注意
 
