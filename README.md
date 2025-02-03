@@ -33,76 +33,17 @@
 裡面包含了鋼琴、貪吃蛇、踩地雷、2048、數獨可以遊玩。檔案為加密的zip，裡面有行為包跟材質包。
 - [YB_ChestUI_sample.zip](https://drive.google.com/file/d/1H3qIe-x_pXWLg7K4HA9JwoXhjldu-l_b/view?usp=sharing)
 
-## 注意
+## 在遊戲中建立靜態頁面
 
-### 頁面更新函式
-`Page` 的 `update` 預設不會執行，將 `tickInterval` 設成 1 以上即可。
-```ts
-new Page({}, {
-    update: ({ player }) => {
-        player.playSound('note.harp')
-    }, tickInterval: 20
-})
-```
+### 超詳細解說
+首先給予自己 `yb:eui_op` 標籤，然後放一個箱子，擺一些物品當作按鈕，使用 `註冊箱子UI頁面` 物品開啟箱子，就會出現一個表單。
 
-### 頁面資料暫存
-切換頁面時會被清空，請自行於 `Page` 的 `start` 建立，於 `update`、`Button` 的 `onClick` 修改。
-```ts
-new Page({
-    13: new Button('click me!', 'diamond', {
-        onClick: ({ player }) => {
-            const count = ChestUI.getData(player).count as number + 1
-            ChestUI.setData(player, { count })
-            player.sendMessage(`click diamond count: ${count}`)
-        }
-    })
-}, {
-    start: ({ player }) => {
-        ChestUI.setData(player, { count: 0 })
-    }
-})
-```
+你可以修改每一個按鈕的屬性，例如 `name` 名稱、`clickSound` 點擊音效、 `toPage` 跳轉頁面和 `commands` 執行指令，使用 `/` 換行， `//` 顯示斜槓。
 
-### 預設值
-可以到 `ChestUI` 的 `config` 修改。
-```ts
-export class ChestUI {
-    config = {
-        defaultPageName: 'home' as const,
-        defaultClickSound: 'random.click',
-        defaultButtonUpdateType: UpdateType.typeId,
-        defaultPage: new Page({ 13: new Button('homePage\n[default]', 'bedrock') }),
-        defaultPageSize: Size.small
-    }
-    // ...
-}
-```
+完成修改後，點擊最後一個按鈕註冊頁面，就完成啦！註冊完後箱子就用不到了，不過留著可以方便修改。
 
-### 頁面不存在
-頁面不存在將使用console.log告知，並導回預設頁面 `ChestUI.config.defaultPageName` 。
-
-### UI 物品識別
-使用 `ItemLockMode.slot` 來識別是否為 UI 中的物品，
-玩家物品欄中本來就有的會被吃掉，請小心。
-可以手動修改 `ChestUI` 的下面兩個 function 增加更多條件。
-```ts
-static isUIItem(item: ItemStack) {
-    return item?.lockMode === ItemLockMode.slot
-}
-static ToUIItem(item: ItemStack) {
-    item.lockMode = ItemLockMode.slot
-}
-```
-使用 `setPageItem` 可以在頁面上放入 UI 物品。如果位置上不是 UI 物品，該方法會將原始物品歸還，配合 `Page` 的 `update` 或 `start` ，就可以為每個玩家顯示不同的資訊。
-```ts
-new Page({}, {
-    start: ({ player }) => {
-        const item = new ItemStack('oak_sign')
-        item.nameTag = `name: ${player.name}`
-        ChestUI.setPageItem(player, { 13: item })
-    }
-})
-```
+### 頁面先後順序
+API 頁面 > 遊戲中建立的頁面 > 預設 home 頁面
 
 ## 範例代碼
 
@@ -187,22 +128,89 @@ ChestUI.setUIPage('home', new Page({
 }))
 ```
 
-## 在遊戲中建立靜態頁面
+## 小知識
 
-### 超詳細解說
-首先給予自己 `yb:eui_op` 標籤，然後放一個箱子，擺一些物品當作按鈕，使用 `註冊箱子UI頁面` 物品開啟箱子，就會出現一個表單。
+### 頁面更新函式
+`Page` 的 `update` 預設不會執行，將 `tickInterval` 設成 1 以上即可。
+```ts
+new Page({}, {
+    update: ({ player }) => {
+        player.playSound('note.harp')
+    }, tickInterval: 20
+})
+```
 
-你可以修改每一個按鈕的屬性，例如 `name` 名稱、`clickSound` 點擊音效、 `toPage` 跳轉頁面和 `commands` 執行指令，使用 `/` 換行， `//` 顯示斜槓。
+### 頁面資料暫存
+切換頁面時會被清空，請自行於 `Page` 的 `start` 建立，於 `update`、`Button` 的 `onClick` 修改。
+```ts
+new Page({
+    13: new Button('click me!', 'diamond', {
+        onClick: ({ player }) => {
+            const count = ChestUI.getData(player).count as number + 1
+            ChestUI.setData(player, { count })
+            player.sendMessage(`click diamond count: ${count}`)
+        }
+    })
+}, {
+    start: ({ player }) => {
+        ChestUI.setData(player, { count: 0 })
+    }
+})
+```
 
-完成修改後，點擊最後一個按鈕註冊頁面，就完成啦！註冊完後箱子就用不到了，不過留著可以方便修改。
+### 預設值
+可以到 `ChestUI` 的 `config` 修改。
+```ts
+export class ChestUI {
+    config = {
+        defaultPageName: 'home' as const,
+        defaultClickSound: 'random.click',
+        defaultButtonUpdateType: UpdateType.typeId,
+        defaultPage: new Page({ 13: new Button('homePage\n[default]', 'bedrock') }),
+        defaultPageSize: Size.small
+    }
+    // ...
+}
+```
 
-### 頁面先後順序
-API 頁面 > 遊戲中建立的頁面 > 預設 home 頁面
+### 頁面不存在
+頁面不存在將使用 console.log 告知，並導回預設頁面 `ChestUI.config.defaultPageName` 。
+
+### UI 物品識別
+使用 `ItemLockMode.slot` 來識別是否為 UI 中的物品，
+玩家物品欄中本來就有的會被吃掉，請小心。
+可以手動修改 `ChestUI` 的下面兩個 function 增加更多條件。
+```ts
+static isUIItem(item: ItemStack) {
+    return item?.lockMode === ItemLockMode.slot
+}
+static ToUIItem(item: ItemStack) {
+    item.lockMode = ItemLockMode.slot
+}
+```
+使用 `setPageItem` 可以在頁面上放入 UI 物品。如果位置上不是 UI 物品，該方法會將原始物品歸還，配合 `Page` 的 `update` 或 `start` ，就可以為每個玩家顯示不同的資訊。
+```ts
+new Page({}, {
+    start: ({ player }) => {
+        const item = new ItemStack('oak_sign')
+        item.nameTag = `name: ${player.name}`
+        ChestUI.setPageItem(player, { 13: item })
+    }
+})
+```
+
+### 索引值參考圖片
+小箱子 `Size.small`  
+<img src="https://github.com/user-attachments/assets/69a7b864-98ea-4c4a-9748-aed752ca74e1" width="300">
+
+大箱子 `Size.large`  
+<img src="https://github.com/user-attachments/assets/426ce194-10ec-4707-9c14-86b503cccbfa" width="300">
+
+超大箱子 `Size.extra`  
+<img src="https://github.com/user-attachments/assets/a150d852-5090-4999-977d-060a5655007f" width="300">
 
 ## LAZY TO DO
-- images of various size with index
 - hitbox pvp test
-- debug mode?: show how many pages assigned
 
 ## Optimize
 - dynamic inventory size component
