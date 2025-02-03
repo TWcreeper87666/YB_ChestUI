@@ -28,7 +28,10 @@ type buttonOptions = {
 }
 
 export class Button {
-    item: ItemStack
+    nameTag: string
+    itemType: string
+    lore?: string[]
+    amount?: number
     updateType?: UpdateType
     onClick?: OnClickFunc
     clickSound?: string
@@ -39,23 +42,22 @@ export class Button {
         itemType: string,
         options: buttonOptions = {}
     ) {
-        this.item = new ItemStack(itemType)
-        this.item.nameTag = '§r' + nameTag
-        ChestUI.ToUIItem(this.item)
+        this.nameTag = nameTag
+        this.itemType = itemType
 
-        var { lore, amount, ...data } = options
-        if (lore) this.item.setLore(lore)
-        if (amount) this.item.amount = amount
-
-        Object.assign(this, data)
+        Object.assign(this, options)
     }
 
-    onClickCheck(item: ItemStack) {
+    getItem() {
+        return ChestUI.newUIItem(this.nameTag, this.itemType, { amount: this.amount, lore: this.lore })
+    }
+
+    updateCheck(item: ItemStack, buttonItem = this.getItem()) {
         switch (this.updateType ?? ChestUI.config.defaultButtonUpdateType) {
             case UpdateType.empty: return !item
-            case UpdateType.amount: return item?.amount !== this.item.amount
-            case UpdateType.typeId: return item?.typeId !== this.item.typeId
-            case UpdateType.stackable: return !item?.isStackableWith(this.item)
+            case UpdateType.amount: return item?.amount !== buttonItem.amount
+            case UpdateType.typeId: return item?.typeId !== buttonItem.typeId
+            case UpdateType.stackable: return !item?.isStackableWith(buttonItem)
             default: return false
         }
     }

@@ -79,10 +79,14 @@ export class ChestUI {
     static ToUIItem(item) {
         item.lockMode = ItemLockMode.slot;
     }
-    static newUIItem(nameTag, typeId, amount = 1) {
+    static newUIItem(nameTag, typeId, options = {}) {
         const item = new ItemStack(typeId);
         item.nameTag = '§r' + nameTag;
-        item.amount = amount;
+        const { amount, lore } = options;
+        if (amount)
+            item.amount = amount;
+        if (lore)
+            item.setLore(lore);
         this.ToUIItem(item);
         return item;
     }
@@ -156,7 +160,8 @@ export class ChestUI {
         for (const [key, button] of Object.entries(page.btnWithIdx)) {
             const idx = parseInt(key);
             const item = container_e.getItem(idx);
-            const runAction = button.onClickCheck(item);
+            const btnItem = button.getItem();
+            const runAction = button.updateCheck(item, btnItem);
             if (runAction) {
                 player.playSound(button.clickSound ?? this.config.defaultClickSound);
                 if (button.toPage) {
@@ -165,8 +170,8 @@ export class ChestUI {
                 }
                 if (item && !_a.isUIItem(item))
                     givePlayerItem(player, item);
-                container_e.setItem(idx, button.item);
-                button.onClick?.({ player, container_e, item: button.item.clone(), idx });
+                container_e.setItem(idx, btnItem);
+                button.onClick?.({ player, container_e, item: btnItem, idx });
                 break;
             }
         }
@@ -209,12 +214,7 @@ _a = ChestUI, _ChestUI_pageInit = function _ChestUI_pageInit(player, entity, pag
         const item = container_e.getItem(i);
         if (item && !this.isUIItem(item))
             givePlayerItem(player, item);
-        try {
-            container_e.setItem(i, btnWithIdx[i]?.item);
-        }
-        catch (error) {
-            console.log(`${JSON.stringify(btnWithIdx)} ${i} ${size} ${error} ${error.stack}`);
-        }
+        container_e.setItem(i, btnWithIdx[i]?.getItem());
     }
     start?.({ player, container_e });
 }, _ChestUI_setPageName = function _ChestUI_setPageName(player, name) {

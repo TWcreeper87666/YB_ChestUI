@@ -1,23 +1,19 @@
-import { ItemStack } from "@minecraft/server";
 import { UpdateType, ChestUI } from "./ChestUI";
 export class Button {
     constructor(nameTag, itemType, options = {}) {
-        this.item = new ItemStack(itemType);
-        this.item.nameTag = '§r' + nameTag;
-        ChestUI.ToUIItem(this.item);
-        var { lore, amount, ...data } = options;
-        if (lore)
-            this.item.setLore(lore);
-        if (amount)
-            this.item.amount = amount;
-        Object.assign(this, data);
+        this.nameTag = nameTag;
+        this.itemType = itemType;
+        Object.assign(this, options);
     }
-    onClickCheck(item) {
+    getItem() {
+        return ChestUI.newUIItem(this.nameTag, this.itemType, { amount: this.amount, lore: this.lore });
+    }
+    updateCheck(item, buttonItem = this.getItem()) {
         switch (this.updateType ?? ChestUI.config.defaultButtonUpdateType) {
             case UpdateType.empty: return !item;
-            case UpdateType.amount: return item?.amount !== this.item.amount;
-            case UpdateType.typeId: return item?.typeId !== this.item.typeId;
-            case UpdateType.stackable: return !item?.isStackableWith(this.item);
+            case UpdateType.amount: return item?.amount !== buttonItem.amount;
+            case UpdateType.typeId: return item?.typeId !== buttonItem.typeId;
+            case UpdateType.stackable: return !item?.isStackableWith(buttonItem);
             default: return false;
         }
     }

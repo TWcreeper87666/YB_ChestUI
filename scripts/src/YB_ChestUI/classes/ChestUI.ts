@@ -89,11 +89,7 @@ export class ChestUI {
         for (let i = 0; i < size; i++) {
             const item = container_e.getItem(i)
             if (item && !this.isUIItem(item)) givePlayerItem(player, item)
-            try {
-                container_e.setItem(i, btnWithIdx[i]?.item)
-            } catch (error) {
-                console.log(`${JSON.stringify(btnWithIdx)} ${i} ${size} ${error} ${error.stack}`)
-            }
+            container_e.setItem(i, btnWithIdx[i]?.getItem())
         }
 
         start?.({ player, container_e })
@@ -116,10 +112,12 @@ export class ChestUI {
         item.lockMode = ItemLockMode.slot
     }
 
-    static newUIItem(nameTag: string, typeId: string, amount = 1) {
+    static newUIItem(nameTag: string, typeId: string, options: { amount?: number, lore?: string[] } = {}) {
         const item = new ItemStack(typeId)
         item.nameTag = '§r' + nameTag
-        item.amount = amount
+        const { amount, lore } = options
+        if (amount) item.amount = amount
+        if (lore) item.setLore(lore)
         this.ToUIItem(item)
         return item
     }
@@ -218,6 +216,7 @@ export class ChestUI {
         if (!entity) entity = this.#spawnEntity(player)
         if (!entity?.isValid()) return
         const container_e = entity.getComponent('inventory').container
+
         const page = this.getPage(player)
 
         if (page.tickInterval) {
@@ -231,7 +230,8 @@ export class ChestUI {
         for (const [key, button] of Object.entries(page.btnWithIdx)) {
             const idx = parseInt(key)
             const item = container_e.getItem(idx)
-            const runAction = button.onClickCheck(item)
+            const btnItem = button.getItem()
+            const runAction = button.updateCheck(item, btnItem)
             if (runAction) {
                 player.playSound(button.clickSound ?? this.config.defaultClickSound)
                 if (button.toPage) {
@@ -239,8 +239,8 @@ export class ChestUI {
                     break
                 }
                 if (item && !ChestUI.isUIItem(item)) givePlayerItem(player, item)
-                container_e.setItem(idx, button.item)
-                button.onClick?.({ player, container_e, item: button.item.clone(), idx })
+                container_e.setItem(idx, btnItem)
+                button.onClick?.({ player, container_e, item: btnItem, idx })
                 break
             }
         }
