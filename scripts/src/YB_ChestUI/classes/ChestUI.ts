@@ -265,22 +265,6 @@ export class ChestUI {
             if (entity.typeId === 'yb:ui_entity') ChestUI.removeUnownedEntity(entity)
         })
 
-        world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
-            const { player, itemStack, block } = e
-            if (itemStack?.typeId !== 'yb:eui_register') return
-            if (block.typeId !== 'minecraft:chest') return
-            e.cancel = true
-            await system.waitTicks(1)
-
-            const container = block.getComponent('inventory').container
-            new Register(player, container).form_menu()
-        })
-
-        world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
-            if (itemStack.typeId !== 'yb:eui_register') return
-            new Register(source).form_delete()
-        })
-
         world.afterEvents.worldInitialize.subscribe(() => {
             world.getAllPlayers().forEach(player => ChestUI.setPage(player, ChestUI.config.defaultPageName))
         })
@@ -307,6 +291,6 @@ export class ChestUI {
 }
 
 ChestUI.init()
-Register.load()
+Register.init()
 
 export { Button, Page, Size, UpdateType }

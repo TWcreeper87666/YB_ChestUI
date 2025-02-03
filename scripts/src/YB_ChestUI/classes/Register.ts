@@ -1,4 +1,4 @@
-import { Container, ItemStack, Player, world } from "@minecraft/server"
+import { Container, ItemStack, Player, system, world } from "@minecraft/server"
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui"
 import { ButtonsWithIndex, Page, Size } from "./Page"
 import { Button } from "./Button"
@@ -30,7 +30,7 @@ export class Register {
     }
 
     form_menu() {
-        if (!this.#check()) return
+        if (this.#invalid()) return
         const form = new ActionFormData().title('§l§1修改頁面')
         const indices = []
         for (let i = 0; i < this.container.size; i++) {
@@ -41,7 +41,7 @@ export class Register {
         }
         form.button('§l註冊頁面')
         form.show(this.player).then(({ canceled, selection }) => {
-            if (canceled || !this.#check()) return
+            if (canceled || this.#invalid()) return
             if (selection < indices.length) {
                 this.#form_edit(indices[selection])
             } else {
@@ -51,6 +51,7 @@ export class Register {
     }
 
     form_delete() {
+        if (this.#invalid()) return
         const jsonPages = Register.#getPages()
         const names = Object.keys(jsonPages)
         if (names.length === 0) {
@@ -65,18 +66,20 @@ export class Register {
             delete jsonPages[name]
             Register.#setPages(jsonPages)
             ChestUI.setUIPage(name, undefined)
-            sendMessage(this.player, `§b已刪除 ${name}`)
+            this.player.sendMessage(`§l§a- 已刪除頁面 ${name}`)
         })
     }
 
-    #check() {
-        if (!this.player.isOp()) {
-            sendMessage(this.player, '§c沒有權限使用')
-            return false
+    #invalid(checkContainer = true) {
+        if (!this.player.hasTag('yb:eui_op')) {
+            sendMessage(this.player, '§c沒有權限使用, 若要使用請輸入\n/tag @s add yb:eui_op')
+            return true
         }
-        const cond = this.container?.isValid()
-        if (!cond) sendMessage(this.player, '§c目標箱子已消失')
-        return cond
+        if (checkContainer && !this.container) {
+            sendMessage(this.player, '§c目標箱子已消失')
+            return true
+        }
+        return false
     }
 
     #form_edit(idx: number) {
@@ -91,7 +94,7 @@ export class Register {
             .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
             .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面, closeUI 關閉UI)', '', processedCommands)
         form.show(this.player).then(({ canceled, formValues }) => {
-            if (canceled || !this.#check()) return
+            if (canceled || this.#invalid()) return
             const [name, lore, clickSound, toPage, commands] = formValues as string[]
             const processedCommands = Register.#split(commands).join('\n')
             item.nameTag = '§r' + Register.#split(name).join('\n')
@@ -107,7 +110,7 @@ export class Register {
             .textField('§l頁面名稱', ChestUI.config.defaultPageName)
             .dropdown('§l頁面大小', options)
         form.show(this.player).then(({ canceled, formValues }) => {
-            if (canceled || !this.#check()) return
+            if (canceled || this.#invalid()) return
             const [name, sizeIdx] = formValues as [string, number]
             if (name.length === 0) return sendMessage(this.player, '§c頁面名稱不可為空')
             const jsonPages = Register.#getPages()
@@ -117,7 +120,7 @@ export class Register {
             } as JsonPage
             Register.#setPages(jsonPages)
             Register.load()
-            sendMessage(this.player, '§a已註冊頁面')
+            this.player.sendMessage(`§l§a- 已註冊頁面 ${name}`)
         })
     }
 
@@ -134,6 +137,26 @@ export class Register {
             if (lore) btnWithIdx[i].lore = Register.#split(lore)
         }
         return btnWithIdx
+    }
+
+    static init() {
+        world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
+            const { player, itemStack, block } = e
+            if (itemStack?.typeId !== 'yb:eui_register') return
+            if (block.typeId !== 'minecraft:chest') return
+            e.cancel = true
+            await system.waitTicks(1)
+
+            const container = block.getComponent('inventory').container
+            new Register(player, container).form_menu()
+        })
+
+        world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
+            if (itemStack.typeId !== 'yb:eui_register') return
+            new Register(source).form_delete()
+        })
+
+        this.load()
     }
 
     static load() {
