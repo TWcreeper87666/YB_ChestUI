@@ -67,7 +67,7 @@ export class ChestUI {
 
     static #pageInit(player: Player, entity: Entity, page: Page) {
         const container_e = entity.getComponent('inventory').container
-        if (!container_e.isValid()) return
+        // if (!container_e.isValid()) return
 
         const { btnWithIdx, size, start } = page
 
@@ -111,7 +111,7 @@ export class ChestUI {
         const entity = this.getEntity(player)
         if (!entity) return
         const container = entity.getComponent('inventory').container
-        if (!container.isValid()) return
+        // if (!container.isValid()) return
         for (const [key, item] of Object.entries(itemsWithIdx)) {
             const slot = parseInt(key)
             const preItem = container.getItem(slot)
@@ -124,9 +124,7 @@ export class ChestUI {
     // --- Entity management ---
     static getEntity(player: Player) {
         const id = player.getDynamicProperty('yb:eui_entityId') as string
-        if (!id) return
-        const entity = world.getEntity(id)
-        return entity?.isValid() ? entity : undefined
+        return id ? world.getEntity(id) : undefined
     }
 
     static #killEntity(entity: Entity) {
@@ -142,9 +140,9 @@ export class ChestUI {
     }
 
     static removeUnownedEntity(entity: Entity) {
-        if (!entity?.isValid()) return
+        if (!entity) return
         const owner = entity.getComponent('tameable').tamedToPlayer
-        if (!owner?.isValid()) this.#killEntity(entity)
+        if (!owner) this.#killEntity(entity)
     }
 
     static #spawnEntity(player: Player, pageName?: string) {
@@ -199,7 +197,7 @@ export class ChestUI {
         if (!this.isUsingUI(player)) return this.close(player, this.config.defaultPageName)
         let entity = this.getEntity(player)
         if (!entity) entity = this.#spawnEntity(player)
-        if (!entity?.isValid()) return
+        if (!entity) return
         const container_e = entity.getComponent('inventory').container
         // if (!container_e.isValid()) return
 

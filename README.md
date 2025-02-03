@@ -1,5 +1,5 @@
 # YB_ChestUI
-For Minecraft Bedrock Editition.
+For Minecraft Bedrock Editition. v1.21.51
 
 ## Gamerule
 `/gamerule showtags false`
@@ -168,7 +168,10 @@ After making your changes, simply register your page and enjoy the result!
 - debug mode?: show how many pages assigned
 - JsonButton add updateType?
 
-## Optimize:
+## Optimize
 - dynamic inventory size component
 - difference size change method optimize
 - rename data to cookie?
+
+## Bug:
+- Teleportation will cause the UI to fail to open. Change your hotbar to respawn it.
