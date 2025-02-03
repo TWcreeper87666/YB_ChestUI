@@ -311,4 +311,4 @@ export class ChestUI {
 ChestUI.init()
 Register.load()
 
-export { Button, Page }
+export { Button, Page, Size, UpdateType }
