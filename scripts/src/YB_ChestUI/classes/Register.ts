@@ -1,8 +1,8 @@
 import { Container, ItemStack, Player, world } from "@minecraft/server"
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui"
-import { ButtonsWithIndex, Page } from "./Page"
+import { ButtonsWithIndex, Page, Size } from "./Page"
 import { Button } from "./Button"
-import { ChestUI, Size } from "./ChestUI"
+import { ChestUI } from "./ChestUI"
 import { sendMessage } from "../functions"
 
 type JsonButton = {
