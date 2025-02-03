@@ -1,4 +1,4 @@
-import { GameMode, ItemStack, Player, system } from "@minecraft/server";
+import { ItemStack, Player } from "@minecraft/server";
 import { Button } from "./classes/Button";
 import { ButtonsWithIndex } from "./classes/Page";
 

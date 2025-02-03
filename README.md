@@ -2,16 +2,17 @@
 
 ## 介紹
 - For Minecraft Bedrock Editition.
-- 用箱子的介面與使用者交互，可用於製作商店、設定、小遊戲等等。
+- 使用物品開啟箱子介面，與使用者交互，可用於製作商店、設定、小遊戲等等。
 - 電腦玩家可以直接點擊按鈕，手機玩家請將物品放置到背包中。
 - 支援在遊戲內製作靜態頁面，想要更複雜的操作就到 `main.ts` 自己寫吧！ tsc 轉換自己研究下。
+
+[![介紹影片](https://img.youtube.com/vi/3HCimKeEIN8/maxresdefault.jpg)](https://www.youtube.com/watch?v=3HCimKeEIN8)
 
 ## 版本
 
 ### 懶得維護就不用beta了，少了 `player.isOp()` 能用而已。
-- Minecraft: 1.21.51+
-- @minecraft/server: 1.16.0
-- @minecraft/server-ui: 1.3.0
+- `@minecraft/server`：`1.16.0`
+- `@minecraft/server-ui`：`1.3.0`
 
 ## 物品
 - `yb:eui_open` 開啟箱子UI
@@ -22,7 +23,13 @@
 - `/tag @s add yb:eui_op` 給予使用 `註冊箱子UI頁面` 物品的權限。
 
 ## 下載
+
+### YB_ChestUI
 - [材質包](https://drive.google.com/file/d/1Jcxw4wSeKuQIIOPivXvKCtBjbooeu-__/view?usp=sharing)
+
+### YB_ChestUI_sample
+裡面包含了鋼琴、
+- [範例addon](https://drive.google.com/file/d/1wn3BW3UCJr6UVnnvC72VACLxB8-_3ofe/view?usp=sharing)
 
 ## 注意
 
@@ -186,8 +193,6 @@ ChestUI.setUIPage('home', new Page({
 你可以修改每一個按鈕的屬性，例如 `name` 名稱、`clickSound` 點擊音效、 `toPage` 跳轉頁面和 `commands` 執行指令，使用 `/` 換行， `//` 顯示斜槓。
 
 完成修改後，點擊最後一個按鈕註冊頁面，就完成啦！註冊完後箱子就用不到了，不過留著可以方便修改。
-
-[範例使用影片(後半段)](https://www.youtube.com/watch?v=3HCimKeEIN8)
 
 ### 頁面先後順序
 API 頁面 > 遊戲中建立的頁面 > 預設 home 頁面

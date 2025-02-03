@@ -3,8 +3,8 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Register_instances, _a, _Register_check, _Register_form_edit, _Register_form_register, _Register_getBtnWithIdx, _Register_buildButton, _Register_setPages, _Register_getPages, _Register_split, _Register_parse;
-import { world } from "@minecraft/server";
+var _Register_instances, _a, _Register_invalid, _Register_form_edit, _Register_form_register, _Register_getBtnWithIdx, _Register_buildButton, _Register_setPages, _Register_getPages, _Register_split, _Register_parse;
+import { system, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { Page, Size } from "./Page";
 import { Button } from "./Button";
@@ -17,7 +17,7 @@ export class Register {
         this.container = container;
     }
     form_menu() {
-        if (!__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
+        if (__classPrivateFieldGet(this, _Register_instances, "m", _Register_invalid).call(this))
             return;
         const form = new ActionFormData().title('§l§1修改頁面');
         const indices = [];
@@ -30,7 +30,7 @@ export class Register {
         }
         form.button('§l註冊頁面');
         form.show(this.player).then(({ canceled, selection }) => {
-            if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
+            if (canceled || __classPrivateFieldGet(this, _Register_instances, "m", _Register_invalid).call(this))
                 return;
             if (selection < indices.length) {
                 __classPrivateFieldGet(this, _Register_instances, "m", _Register_form_edit).call(this, indices[selection]);
@@ -41,6 +41,8 @@ export class Register {
         });
     }
     form_delete() {
+        if (__classPrivateFieldGet(this, _Register_instances, "m", _Register_invalid).call(this, false))
+            return;
         const jsonPages = __classPrivateFieldGet(_a, _a, "m", _Register_getPages).call(_a);
         const names = Object.keys(jsonPages);
         if (names.length === 0) {
@@ -57,8 +59,27 @@ export class Register {
             delete jsonPages[name];
             __classPrivateFieldGet(_a, _a, "m", _Register_setPages).call(_a, jsonPages);
             ChestUI.setUIPage(name, undefined);
-            sendMessage(this.player, `§b已刪除 ${name}`);
+            this.player.sendMessage(`§l§a- 已刪除頁面 ${name}`);
         });
+    }
+    static init() {
+        world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
+            const { player, itemStack, block } = e;
+            if (itemStack?.typeId !== 'yb:eui_register')
+                return;
+            if (block.typeId !== 'minecraft:chest')
+                return;
+            e.cancel = true;
+            await system.waitTicks(1);
+            const container = block.getComponent('inventory').container;
+            new _a(player, container).form_menu();
+        });
+        world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
+            if (itemStack.typeId !== 'yb:eui_register')
+                return;
+            new _a(source).form_delete();
+        });
+        this.load();
     }
     static load() {
         const pages = __classPrivateFieldGet(this, _a, "m", _Register_getPages).call(this);
@@ -72,15 +93,16 @@ export class Register {
         }
     }
 }
-_a = Register, _Register_instances = new WeakSet(), _Register_check = function _Register_check() {
-    if (!this.player.isOp()) {
-        sendMessage(this.player, '§c沒有權限使用');
-        return false;
+_a = Register, _Register_instances = new WeakSet(), _Register_invalid = function _Register_invalid(checkContainer = true) {
+    if (!this.player.hasTag('yb:eui_op')) {
+        sendMessage(this.player, '§c沒有權限使用, 若要使用請輸入\n/tag @s add yb:eui_op');
+        return true;
     }
-    const cond = this.container?.isValid();
-    if (!cond)
+    if (checkContainer && !this.container) {
         sendMessage(this.player, '§c目標箱子已消失');
-    return cond;
+        return true;
+    }
+    return false;
 }, _Register_form_edit = function _Register_form_edit(idx) {
     const item = this.container.getItem(idx);
     const [lore, _, clickSound, toPage, commands] = item.getLore();
@@ -93,7 +115,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_check = function _
         .textField('§l切換至頁面(將不執行指令)', '', toPage ?? '')
         .textField('§l指令("/"換行, toPage:頁面名稱 可切換頁面, closeUI 關閉UI)', '', processedCommands);
     form.show(this.player).then(({ canceled, formValues }) => {
-        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
+        if (canceled || __classPrivateFieldGet(this, _Register_instances, "m", _Register_invalid).call(this))
             return;
         const [name, lore, clickSound, toPage, commands] = formValues;
         const processedCommands = __classPrivateFieldGet(_a, _a, "m", _Register_split).call(_a, commands).join('\n');
@@ -108,7 +130,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_check = function _
         .textField('§l頁面名稱', ChestUI.config.defaultPageName)
         .dropdown('§l頁面大小', options);
     form.show(this.player).then(({ canceled, formValues }) => {
-        if (canceled || !__classPrivateFieldGet(this, _Register_instances, "m", _Register_check).call(this))
+        if (canceled || __classPrivateFieldGet(this, _Register_instances, "m", _Register_invalid).call(this))
             return;
         const [name, sizeIdx] = formValues;
         if (name.length === 0)
@@ -120,7 +142,7 @@ _a = Register, _Register_instances = new WeakSet(), _Register_check = function _
         };
         __classPrivateFieldGet(_a, _a, "m", _Register_setPages).call(_a, jsonPages);
         _a.load();
-        sendMessage(this.player, '§a已註冊頁面');
+        this.player.sendMessage(`§l§a- 已註冊頁面 ${name}`);
     });
 }, _Register_getBtnWithIdx = function _Register_getBtnWithIdx() {
     const btnWithIdx = {};

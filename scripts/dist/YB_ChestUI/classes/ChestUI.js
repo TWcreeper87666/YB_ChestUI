@@ -195,22 +195,6 @@ export class ChestUI {
             if (entity.typeId === 'yb:ui_entity')
                 _a.removeUnownedEntity(entity);
         });
-        world.beforeEvents.playerInteractWithBlock.subscribe(async (e) => {
-            const { player, itemStack, block } = e;
-            if (itemStack?.typeId !== 'yb:eui_register')
-                return;
-            if (block.typeId !== 'minecraft:chest')
-                return;
-            e.cancel = true;
-            await system.waitTicks(1);
-            const container = block.getComponent('inventory').container;
-            new Register(player, container).form_menu();
-        });
-        world.afterEvents.itemUse.subscribe(({ source, itemStack }) => {
-            if (itemStack.typeId !== 'yb:eui_register')
-                return;
-            new Register(source).form_delete();
-        });
         world.afterEvents.worldInitialize.subscribe(() => {
             world.getAllPlayers().forEach(player => _a.setPage(player, _a.config.defaultPageName));
         });
@@ -295,5 +279,5 @@ _ChestUI_pages = { value: {
         [_a.config.defaultPageName]: _a.config.defaultPage
     } };
 ChestUI.init();
-Register.load();
+Register.init();
 export { Button, Page, Size, UpdateType };

@@ -51,7 +51,7 @@ export class Register {
     }
 
     form_delete() {
-        if (this.#invalid()) return
+        if (this.#invalid(false)) return
         const jsonPages = Register.#getPages()
         const names = Object.keys(jsonPages)
         if (names.length === 0) {
