@@ -218,3 +218,4 @@ new Page({}, {
 
 ## Bug:
 - Teleportation will cause the UI to fail to open. Change your hotbar to respawn it.
+- rejoin will trigger home page's quit and start event
