@@ -212,6 +212,7 @@ new Page({}, {
 ## LAZY TO DO
 - Allow players to have different default pages
 - hitbox pvp test
+- button remove item, add Slot
 
 ## Optimize
 - dynamic inventory size component
