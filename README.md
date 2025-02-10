@@ -214,6 +214,7 @@ new Page({}, {
 - hitbox pvp test
 - button remove item, add Slot
 - world init add removeUnownedEntity
+- page.size ?? this.config.defaultPageSize fix
 
 ## Optimize
 - dynamic inventory size component
