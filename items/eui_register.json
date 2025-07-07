@@ -14,7 +14,6 @@
       },
       "minecraft:max_stack_size": 1,
       "minecraft:hover_text_color": "light_purple",
-      "minecraft:on_use": {},
       "minecraft:glint": true
     }
   }

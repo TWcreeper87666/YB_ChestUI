@@ -36,16 +36,14 @@ export class ChestUI {
             name = this.config.defaultPageName
             this.#setPageName(player, name)
         }
-        const page = this.#pages[name]
-        if (!page.size) page.size = this.config.defaultPageSize
-        return page
+        return this.#pages[name]
     }
 
     static setPage(player: Player, name: string) {
         const prePageName = this.getPageName(player)
         if (prePageName in this.#pages) this.#pages[prePageName].quit?.({ playerName: player.name, player })
 
-        const preSize = this.getPage(player).size
+        const preSize = this.getPage(player).size ?? this.config.defaultPageSize
         if (!this.isUsingUI(player)) return
         if (!(name in this.#pages)) {
             console.log(`page "${name}" does not exist`)
@@ -55,29 +53,30 @@ export class ChestUI {
         this.#setPageName(player, name)
 
         const entity = this.getEntity(player)
-        if (preSize !== page.size) {
+
+        if (preSize !== (page.size ?? this.config.defaultPageSize)) {
             sendMessage(player, '請重新開啟介面!')
             return this.#spawnEntity(player)
         }
         if (!entity) return this.#spawnEntity(player)
-        this.setData(player, undefined)
-        player.setDynamicProperty('yb:eui_pageUpdateTick', 0)
         this.#pageInit(player, entity, page)
     }
 
     static #pageInit(player: Player, entity: Entity, page: Page) {
         const container_e = entity.getComponent('inventory').container
-        // if (!container_e.isValid()) return
+        // if (!container_e.isValid) return
 
         const { btnWithIdx, size, start } = page
 
-        for (let i = 0; i < size; i++) {
+        for (let i = 0; i < (size ?? this.config.defaultPageSize); i++) {
             const item = container_e.getItem(i)
             if (item && !this.isUIItem(item)) givePlayerItem(player, item)
             container_e.setItem(i, btnWithIdx[i]?.getItem())
         }
 
+        this.setData(player, undefined)
         start?.({ player, container_e })
+        player.setDynamicProperty('yb:eui_pageUpdateTick', 0)
     }
 
     static getPageName(player: Player) {
@@ -93,7 +92,7 @@ export class ChestUI {
         return item?.lockMode === ItemLockMode.slot
     }
 
-    static ToUIItem(item: ItemStack) {
+    static toUIItem(item: ItemStack) {
         item.lockMode = ItemLockMode.slot
     }
 
@@ -103,7 +102,7 @@ export class ChestUI {
         const { amount, lore } = options
         if (amount) item.amount = amount
         if (lore) item.setLore(lore)
-        this.ToUIItem(item)
+        this.toUIItem(item)
         return item
     }
 
@@ -111,12 +110,12 @@ export class ChestUI {
         const entity = this.getEntity(player)
         if (!entity) return
         const container = entity.getComponent('inventory').container
-        // if (!container.isValid()) return
+        // if (!container.isValid) return
         for (const [key, item] of Object.entries(itemsWithIdx)) {
             const slot = parseInt(key)
             const preItem = container.getItem(slot)
             if (preItem && !this.isUIItem(preItem)) givePlayerItem(player, preItem)
-            if (item) this.ToUIItem(item)
+            if (item) this.toUIItem(item)
             container.setItem(slot, item)
         }
     }
@@ -140,7 +139,7 @@ export class ChestUI {
     }
 
     static removeUnownedEntity(entity: Entity) {
-        if (!entity) return
+        if (!entity || !entity.isValid) return
         const owner = entity.getComponent('tameable').tamedToPlayer
         if (!owner) this.#killEntity(entity)
     }
@@ -156,7 +155,7 @@ export class ChestUI {
             return
         }
         entity.getComponent('tameable').tame(player)
-        entity.nameTag = this.#getSizeName(page.size)
+        entity.nameTag = this.#getSizeName(page.size ?? this.config.defaultPageSize)
         player.setDynamicProperty('yb:eui_entityId', entity.id)
 
         this.#pageInit(player, entity, page)
@@ -199,7 +198,7 @@ export class ChestUI {
         if (!entity) entity = this.#spawnEntity(player)
         if (!entity) return
         const container_e = entity.getComponent('inventory').container
-        // if (!container_e.isValid()) return
+        // if (!container_e.isValid) return
 
         const page = this.getPage(player)
 
@@ -260,13 +259,22 @@ export class ChestUI {
         if (pageName) this.#setPageName(player, pageName)
     }
 
+    static keepStateClose(player: Player) {
+        const entity = this.getEntity(player)
+        if (!entity) return
+        const { x, y, z } = entity.location
+        entity.teleport({ x, y: y + 100, z })
+        sendMessage(player, '請重新開啟介面!')
+    }
+
     static init() {
         world.afterEvents.entityLoad.subscribe(({ entity }) => {
             if (entity.typeId === 'yb:ui_entity') ChestUI.removeUnownedEntity(entity)
         })
 
-        world.afterEvents.worldInitialize.subscribe(() => {
+        world.afterEvents.worldLoad.subscribe(() => {
             world.getAllPlayers().forEach(player => ChestUI.setPage(player, ChestUI.config.defaultPageName))
+            world.getDimension('overworld').getEntities({ type: 'yb:ui_entity' }).forEach(entity => ChestUI.removeUnownedEntity(entity))
         })
 
         world.beforeEvents.playerLeave.subscribe(async ({ player }) => {
@@ -290,7 +298,9 @@ export class ChestUI {
     }
 }
 
-ChestUI.init()
-Register.init()
+system.run(() => {
+    ChestUI.init()
+    Register.init()
+})
 
 export { Button, Page, Size, UpdateType }

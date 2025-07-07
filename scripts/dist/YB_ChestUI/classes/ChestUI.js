@@ -29,16 +29,13 @@ export class ChestUI {
             name = this.config.defaultPageName;
             __classPrivateFieldGet(this, _a, "m", _ChestUI_setPageName).call(this, player, name);
         }
-        const page = __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[name];
-        if (!page.size)
-            page.size = this.config.defaultPageSize;
-        return page;
+        return __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[name];
     }
     static setPage(player, name) {
         const prePageName = this.getPageName(player);
         if (prePageName in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages))
             __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[prePageName].quit?.({ playerName: player.name, player });
-        const preSize = this.getPage(player).size;
+        const preSize = this.getPage(player).size ?? this.config.defaultPageSize;
         if (!this.isUsingUI(player))
             return;
         if (!(name in __classPrivateFieldGet(this, _a, "f", _ChestUI_pages))) {
@@ -48,14 +45,12 @@ export class ChestUI {
         const page = __classPrivateFieldGet(this, _a, "f", _ChestUI_pages)[name];
         __classPrivateFieldGet(this, _a, "m", _ChestUI_setPageName).call(this, player, name);
         const entity = this.getEntity(player);
-        if (preSize !== page.size) {
+        if (preSize !== (page.size ?? this.config.defaultPageSize)) {
             sendMessage(player, '請重新開啟介面!');
             return __classPrivateFieldGet(this, _a, "m", _ChestUI_spawnEntity).call(this, player);
         }
         if (!entity)
             return __classPrivateFieldGet(this, _a, "m", _ChestUI_spawnEntity).call(this, player);
-        this.setData(player, undefined);
-        player.setDynamicProperty('yb:eui_pageUpdateTick', 0);
         __classPrivateFieldGet(this, _a, "m", _ChestUI_pageInit).call(this, player, entity, page);
     }
     static getPageName(player) {
@@ -65,7 +60,7 @@ export class ChestUI {
     static isUIItem(item) {
         return item?.lockMode === ItemLockMode.slot;
     }
-    static ToUIItem(item) {
+    static toUIItem(item) {
         item.lockMode = ItemLockMode.slot;
     }
     static newUIItem(nameTag, typeId, options = {}) {
@@ -76,7 +71,7 @@ export class ChestUI {
             item.amount = amount;
         if (lore)
             item.setLore(lore);
-        this.ToUIItem(item);
+        this.toUIItem(item);
         return item;
     }
     static setPageItem(player, itemsWithIdx) {
@@ -84,14 +79,14 @@ export class ChestUI {
         if (!entity)
             return;
         const container = entity.getComponent('inventory').container;
-        // if (!container.isValid()) return
+        // if (!container.isValid) return
         for (const [key, item] of Object.entries(itemsWithIdx)) {
             const slot = parseInt(key);
             const preItem = container.getItem(slot);
             if (preItem && !this.isUIItem(preItem))
                 givePlayerItem(player, preItem);
             if (item)
-                this.ToUIItem(item);
+                this.toUIItem(item);
             container.setItem(slot, item);
         }
     }
@@ -101,7 +96,7 @@ export class ChestUI {
         return id ? world.getEntity(id) : undefined;
     }
     static removeUnownedEntity(entity) {
-        if (!entity)
+        if (!entity || !entity.isValid)
             return;
         const owner = entity.getComponent('tameable').tamedToPlayer;
         if (!owner)
@@ -134,7 +129,7 @@ export class ChestUI {
         if (!entity)
             return;
         const container_e = entity.getComponent('inventory').container;
-        // if (!container_e.isValid()) return
+        // if (!container_e.isValid) return
         const page = this.getPage(player);
         if (page.tickInterval) {
             const pageUpdateTick = player.getDynamicProperty('yb:eui_pageUpdateTick') ?? 0;
@@ -190,13 +185,22 @@ export class ChestUI {
         if (pageName)
             __classPrivateFieldGet(this, _a, "m", _ChestUI_setPageName).call(this, player, pageName);
     }
+    static keepStateClose(player) {
+        const entity = this.getEntity(player);
+        if (!entity)
+            return;
+        const { x, y, z } = entity.location;
+        entity.teleport({ x, y: y + 100, z });
+        sendMessage(player, '請重新開啟介面!');
+    }
     static init() {
         world.afterEvents.entityLoad.subscribe(({ entity }) => {
             if (entity.typeId === 'yb:ui_entity')
                 _a.removeUnownedEntity(entity);
         });
-        world.afterEvents.worldInitialize.subscribe(() => {
+        world.afterEvents.worldLoad.subscribe(() => {
             world.getAllPlayers().forEach(player => _a.setPage(player, _a.config.defaultPageName));
+            world.getDimension('overworld').getEntities({ type: 'yb:ui_entity' }).forEach(entity => _a.removeUnownedEntity(entity));
         });
         world.beforeEvents.playerLeave.subscribe(async ({ player }) => {
             const entity = _a.getEntity(player);
@@ -219,15 +223,17 @@ export class ChestUI {
 }
 _a = ChestUI, _ChestUI_pageInit = function _ChestUI_pageInit(player, entity, page) {
     const container_e = entity.getComponent('inventory').container;
-    // if (!container_e.isValid()) return
+    // if (!container_e.isValid) return
     const { btnWithIdx, size, start } = page;
-    for (let i = 0; i < size; i++) {
+    for (let i = 0; i < (size ?? this.config.defaultPageSize); i++) {
         const item = container_e.getItem(i);
         if (item && !this.isUIItem(item))
             givePlayerItem(player, item);
         container_e.setItem(i, btnWithIdx[i]?.getItem());
     }
+    this.setData(player, undefined);
     start?.({ player, container_e });
+    player.setDynamicProperty('yb:eui_pageUpdateTick', 0);
 }, _ChestUI_setPageName = function _ChestUI_setPageName(player, name) {
     player.setDynamicProperty('yb:eui_page', name);
 }, _ChestUI_killEntity = function _ChestUI_killEntity(entity) {
@@ -253,7 +259,7 @@ _a = ChestUI, _ChestUI_pageInit = function _ChestUI_pageInit(player, entity, pag
         return;
     }
     entity.getComponent('tameable').tame(player);
-    entity.nameTag = __classPrivateFieldGet(this, _a, "m", _ChestUI_getSizeName).call(this, page.size);
+    entity.nameTag = __classPrivateFieldGet(this, _a, "m", _ChestUI_getSizeName).call(this, page.size ?? this.config.defaultPageSize);
     player.setDynamicProperty('yb:eui_entityId', entity.id);
     __classPrivateFieldGet(this, _a, "m", _ChestUI_pageInit).call(this, player, entity, page);
     if (pageName)
@@ -278,6 +284,8 @@ ChestUI.config = {
 _ChestUI_pages = { value: {
         [_a.config.defaultPageName]: _a.config.defaultPage
     } };
-ChestUI.init();
-Register.init();
+system.run(() => {
+    ChestUI.init();
+    Register.init();
+});
 export { Button, Page, Size, UpdateType };
