@@ -9,10 +9,8 @@
 [![介紹影片](https://img.youtube.com/vi/3HCimKeEIN8/maxresdefault.jpg)](https://www.youtube.com/watch?v=3HCimKeEIN8)
 
 ## 版本
-
-### 懶得維護就不用beta了，少了 `player.isOp()` 能用而已。
-- `@minecraft/server`：`1.16.0`
-- `@minecraft/server-ui`：`1.3.0`
+- `@minecraft/server`：`2.0.0`
+- `@minecraft/server-ui`：`2.0.0`
 
 ## 物品
 - `yb:eui_open` 開啟箱子UI
