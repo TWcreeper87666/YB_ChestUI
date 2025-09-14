@@ -213,6 +213,7 @@ new Page({}, {
 - button remove item, add Slot
 - world init add removeUnownedEntity
 - page.size ?? this.config.defaultPageSize fix
+- class for page data, setPage(player: Player, name: string, withData?: UIData)
 
 ## Optimize
 - dynamic inventory size component
