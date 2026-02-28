@@ -208,6 +208,7 @@ new Page({}, {
 <img src="https://github.com/user-attachments/assets/a150d852-5090-4999-977d-060a5655007f" width="300">
 
 ## LAZY TO DO
+- page open event (interact with entity)
 - Allow players to have different default pages
 - hitbox pvp test
 - button remove item, add Slot
