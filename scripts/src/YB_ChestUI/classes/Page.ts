@@ -1,10 +1,4 @@
-import {
-  Container,
-  Entity,
-  ItemStack,
-  Player,
-  system,
-} from "@minecraft/server";
+import { Container, Player } from "@minecraft/server";
 import { Button } from "./Button";
 
 export enum Size {

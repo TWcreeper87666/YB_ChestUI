@@ -1,4 +1,4 @@
-import { Container, ItemStack, Player, system, world } from "@minecraft/server";
+import { Container, Player, system, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import { ButtonsWithIndex, Page, Size } from "./Page";
 import { Button } from "./Button";

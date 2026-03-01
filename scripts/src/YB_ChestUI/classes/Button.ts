@@ -1,11 +1,4 @@
-import {
-  Player,
-  Entity,
-  Container,
-  ItemStack,
-  ItemLockMode,
-  ItemType,
-} from "@minecraft/server";
+import { Player, Container, ItemStack } from "@minecraft/server";
 import { ChestUI } from "./ChestUI";
 
 export type OnClickFunc = (arg: {
