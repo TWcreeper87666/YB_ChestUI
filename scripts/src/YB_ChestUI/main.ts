@@ -1,3 +1,3 @@
-import { ChestUI } from "./classes/ChestUI"
+import { ChestUI } from "./classes/ChestUI";
 
-ChestUI // make your page here!
+ChestUI; // make your page here!
